@@ -1,0 +1,89 @@
+---
+- name: "PRIVACYIDEA - Ensure that directory are created"
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0755') }}"
+    state: directory
+  loop: "{{ privacyidea_dirs }}"
+
+- name: "PRIVACYIDEA - Copy files"
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ privacyidea_path }}/{{ item.dest | default(item.src) }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0644') }}"
+  loop: "{{ privacyidea_files }}"
+  notify: "docker privacyidea restart"
+
+- name: "PRIVACYIDEA - Create files from template"
+  template:
+    src: "{{ item.src }}.j2"
+    dest: "{{ privacyidea_path }}/{{ item.dest | default(item.src) }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0644') }}"
+  loop: "{{ privacyidea_templates }}"
+  notify: "docker privacyidea restart"
+
+- name: "PRIVACYIDEA - Get attestation certs"
+  community.docker.docker_container:
+    name: "python-attestations"
+    image: "{{ python_docker_image }}"
+    command: "python /fido_mds.py"
+    debug: yes
+    volumes:
+      - "/{{ privacyidea_path }}/fido_mds.py:/fido_mds.py"
+      - "/{{ privacyidea_path }}/webauthn_attestation_certs:/webauthn_attestation_certs"
+
+- name: "PRIVACYIDEA - Create docker-compose.yml from template"
+  template:
+    src: "{{ privacyidea_docker_compose_template }}.j2"
+    dest: "{{ privacyidea_path }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: 0644
+  notify: "docker privacyidea restart"
+
+- name: "PRIVACYIDEA - Prepare log file if needed"
+  file:
+    path: "{{ log_path | default('/var/log') }}/privacyidea/privacyidea.log"
+    owner: 1001
+    group: 1001
+    mode: "0644"
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+  notify: "docker privacyidea restart"
+
+- name: "PRIVACYIDEA - Start docker image"
+  community.docker.docker_compose:
+    project_src: "{{ privacyidea_path }}"
+    state: present
+
+- name: "PRIVACYIDEA - site-specific tasks"
+  when: privacyidea_site_specific_tasks is defined
+  include_tasks:
+    file: "files/{{ privacyidea_site_specific_tasks }}"
+    apply:
+      tags:
+        - site_specific
+        - privacyidea_site_specific
+  tags:
+    - site_specific
+
+- name: "PRIVACYIDEA - Cronjobs"
+  cron:
+    name: "{{ item. name }}"
+    user: "{{ item.user | default('root') }}"
+    job: "{{ item.job }}"
+    hour: "{{ item.hour | default('*') }}"
+    minute: "{{ item.minute | default('*') }}"
+  loop: "{{ privacyidea_cronjobs | default([]) }}"
+
+- name: "PRIVACYIDEA - Force cronjobs when install"
+  shell: "{{ item.job }}"
+  when: force=="true"
+  loop: "{{ privacyidea_cronjobs | default([]) }}"

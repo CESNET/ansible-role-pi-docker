@@ -1,0 +1,6 @@
+---
+# tasks file for cesnet.pi_docker
+
+- import_tasks: privacyidea.yml
+  tags:
+    - privacyidea

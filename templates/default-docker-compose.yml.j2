@@ -1,0 +1,87 @@
+{{ ansible_managed | comment}}
+
+version: '3'
+services:
+  privacyidea:
+    image: {{ privacyidea_docker_image }}
+    container_name: privacy_idea
+    restart: always
+    networks:
+      - {{ privacyidea_docker_network }}
+{% if privacy_idea_config.environments is defined and privacy_idea_config.environments %}
+    environment:
+{% for environment in privacy_idea_config.environments %}
+      - {{ environment }}
+{% endfor %}
+{% endif %}
+{% if privacy_idea_config.volumes is defined and privacy_idea_config.volumes %}
+    volumes:
+{% for volume in privacy_idea_config.volumes %}
+      - {{ volume }}
+{% endfor %}
+{% endif %}
+{% if privacy_idea_config.ports is defined and privacy_idea_config.ports %}
+    ports:
+{% for port in privacy_idea_config.ports %}
+      - {{ port }}
+{% endfor %}
+{% endif %}
+    logging:
+      driver: "syslog"
+      options:
+        tag: {{ privacy_idea_config.log_tag | default('privacy_idea') }}
+{% if privacy_idea_config.extra_hosts is defined and privacy_idea_config.extra_hosts %}
+    extra_hosts:
+{% for host in privacy_idea_config.extra_hosts | default([]) %}
+      - {{ host }}
+{% endfor %}
+{% endif %}
+
+{% for instance_name in privacyidea_oauthproxy_instances | default([]) %}
+{% set instance = privacyidea_oauthproxy_instances[instance_name] %}
+  {{ instance_name }}:
+    image: {{ privacyidea_oauthproxy_docker_image }}
+    container_name: {{ instance_name }}
+    restart: always
+    command: ''
+    entrypoint: "oauth2-proxy"
+    networks:
+      - {{ privacyidea_docker_network }}
+{% if instance.environments is defined and instance.environments %}
+    environment:
+{% for environment in instance.environments %}
+      - {{ environment }}
+{% endfor %}
+{% endif %}
+{% if instance.volumes is defined and instance.volumes %}
+    volumes:
+{% for volume in instance.volumes %}
+      - {{ volume }}
+{% endfor %}
+{% endif %}
+{% if instance.ports is defined and instance.ports %}
+    ports:
+{% for port in instance.ports %}
+      - {{ port }}
+{% endfor %}
+{% endif %}
+    logging:
+      driver: "syslog"
+      options:
+        tag: {{ instance.log_tag | default('oauthproxy') }}
+{% if instance.extra_hosts is defined and instance.extra_hosts %}
+    extra_hosts:
+{% for host in instance.extra_hosts | default([]) %}
+      - {{ host }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+volumes:
+  pistatic:
+    external: true
+
+networks:
+  {{ privacyidea_docker_network }}:
+    external:
+      name: {{ privacyidea_docker_network }}

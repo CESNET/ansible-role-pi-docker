@@ -1,0 +1,20 @@
+{{ ansible_managed | comment}}
+{% set config = privacyidea_template.perun_connector_yaml %}
+attributes_manager_config:
+  adapters:
+    - type: openApi
+      priority: 1
+      host: "https://{{ config.perun_rpc.hostname }}/ba/rpc"
+      auth_type: BasicAuth
+      username: "{{ config.perun_rpc.user }}"
+      password: "{{ config.perun_rpc.password }}"
+      rp_id_attribute: urn:perun:facility:attribute-def:def:OIDCClientID # TODO: urn:perun:facility:attribute-def:def:rpIdentifier
+attributes_map:
+  {{ config.settings_attribute.name }}:
+    id: {{ config.settings_attribute.id }}
+    type: java.lang.String
+    ldap:
+  {{ config.token_types_attribute.name }}:
+    id: {{ config.token_types_attribute.id }}
+    type: java.util.ArrayList
+    ldap:

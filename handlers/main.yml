@@ -1,0 +1,10 @@
+---
+# handlers file for cesnet.mariadb_docker
+
+- name: "PRIVACYIDEA Restart"
+  community.docker.docker_compose:
+    project_src: "{{ privacyidea_path }}"
+    state: present
+    pull: yes
+    restarted: yes
+  listen: "docker privacyidea restart"

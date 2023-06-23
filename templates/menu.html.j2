@@ -1,0 +1,189 @@
+{% set config = privacyidea_template.menu_html %}
+
+<div class="alert alert-warning" role="alert"
+    ng-show="backend_log_level === 10" translate>
+    privacyIDEA is running in DEBUG mode. You can change the debug level in
+    pi.cfg.
+</div>
+<div class="alert alert-danger" role="alert"
+    ng-show="backend_log_level < 10" translate>
+    privacyIDEA is running in DEBUG mode with PASSWORDS being written to the
+    log file. You can change the debug level in
+    pi.cfg. Afterwards be sure to remove the logfile!
+</div>
+<div class="navbar navbar-default">
+    <div class="container">
+        {% raw %}
+        <a class="navbar-brand" ui-sref="token.list" ng-show="loggedInUser.role">
+            <img ng-src="{{ instanceUrl }}/static/css/{{ piLogo }}"
+                class="pilogo" alt="privacyIDEA">
+        </a>
+        <a class="navbar-brand" ng-hide="loggedInUser.role">
+            <img ng-src="{{ instanceUrl }}/static/css/{{ piLogo }}"
+                class="pilogo" alt="privacyIDEA">
+        </a>
+        {% endraw %}
+        <button type="button" class="navbar-toggle"
+                data-toggle="collapse" data-target=".myMainNavbar"
+                aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+
+        <div class="navbar-collapse collapse myMainNavbar">
+            <ul class="nav navbar-nav" ng-hide="token_wizard">
+                <li ui-sref-active="active"
+                    ng-show="loggedInUser.role == 'admin' && admin_dashboard">
+                    <a ui-sref="dashboard">
+                    <span class="glyphicon glyphicon-dashboard"
+                            aria-hidden="true"></span>
+                        <translate>Dashboard</translate>
+                    </a></li>
+
+                <li ui-sref-active="active"
+                    ng-show="loggedInUser.role && checkMainMenu('tokens')">
+                    <a ui-sref="token.list">
+                    <span class="glyphicon glyphicon-phone"
+                            aria-hidden="true"></span>
+                        <translate>Tokens</translate>
+                    </a></li>
+
+                <li ui-sref-active="active"
+                    ng-show="loggedInUser.role == 'admin' && checkMainMenu('users')">
+                    <a ui-sref="user.list">
+                    <span class="glyphicon glyphicon-user"
+                            aria-hidden="true"></span>
+                        <translate>Users</translate>
+                    </a></li>
+
+                <li ui-sref-active="active"
+                    ng-show="loggedInUser.role == 'user' && checkMainMenu('users')">
+                    <a ui-sref="user.password">
+                    <span class="glyphicon glyphicon-user"
+                            aria-hidden="true"></span>
+                        <translate>User</translate>
+                    </a></li>
+
+                <li ui-sref-active="active"
+                    ng-show="loggedInUser.role == 'admin' && checkMainMenu('machines')">
+                    <a ui-sref="machine.list">
+                    <span class="glyphicon glyphicon-tasks"
+                            aria-hidden="true"></span>
+                        <translate>Machines</translate>
+                    </a></li>
+                <li ui-sref-active="active"
+                    ng-show="loggedInUser.role == 'admin' && checkMainMenu('config')">
+                    <a ui-sref="config.system">
+                        <span class="glyphicon glyphicon-cog"
+                            aria-hidden="true"></span>
+                        <translate>Config</translate>
+                    </a>
+                </li>
+                <li ui-sref-active="active"
+                    ng-show="loggedInUser.role && checkMainMenu('audit')">
+                    <a ui-sref="audit.log">
+                        <span class="glyphicon glyphicon-search"
+                            aria-hidden="true"></span>
+                        <translate>Audit</translate>
+                    </a>
+                </li>
+                <li ui-sref-active="active"
+                    ng-show="loggedInUser.role == 'admin' && checkMainMenu('components')">
+                    <a ui-sref="component.clienttype">
+                        <span class="glyphicon glyphicon-calendar"
+                            aria-hidden="true"></span>
+                        <translate>Components</translate>
+                    </a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li ng-show="show_node">
+                    <a>
+                        <b>{% raw %}{{ show_node }}{% endraw %}</b>
+                    </a>
+                </li>
+                <li>
+                    <spinner name="spinner" show="false"></spinner>
+                </li>
+                <li ng-show="loggedInUser.role && showReload">
+                    <a ng-click="reload()" style="cursor: pointer">
+                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                    <translate>Refresh</translate>
+                    </a>
+                </li>
+                <li ng-class="{active: $state.includes('register')}"
+                    ng-show="registrationAllowed">
+                    <a ui-sref="register" ng-hide="loggedInUser.username"
+                        translate>Register</a>
+                </li>
+                <li ng-class="{active: $state.includes('login')}">
+                    <a ui-sref="login" ng-hide="loggedInUser.username"
+                        translate>Login</a>
+                </li>
+                <li ng-show="loggedInUser.role == 'admin'">
+                    <table class="btn-group" style="margin-right: 1em">
+                        <tr>
+                            <td>
+                                <input type="text" class="form-control" id="username-cs" placeholder="hledat uživatelské jméno..." required ng-show="browserLanguage === 'cs'">
+                                <input type="text" class="form-control" id="username-en" placeholder="search username..." required ng-hide="browserLanguage === 'cs'">
+                            </td>
+                            <td>
+                                <button type="button" title="search" class="btn btn-default" onclick="location.hash = '#!/user/details/{{ config.search_realm }}/' + (document.getElementById('username-cs')?.value || document.getElementById('username-en')?.value)">
+                                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </li>
+                <li>
+                    <div class="btn-group" ng-show="loggedInUser.username">
+                        <button type="button" class="btn btn-warning">
+                            {% raw %}{{ loggedInUser.username }} {% endraw %}
+                        </button>
+                        <button type="button"
+                                class="btn btn-warning dropdown-toggle"
+                                data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ config.support_url }}"
+				                    target="documentation" translate>
+                                Support</a></li>
+                            <li ng-show="piExternalLinks !== 'False'">
+                                <a href="https://community.privacyidea.org"
+				                    target="_external" translate>Community</a></li>
+                            <li ng-show="piExternalLinks !== 'False'">
+                                <a href="{% raw %}{{ privacyideaSupportLink }}{% endraw %}"
+				                    target="_external" translate
+				>Support</a></li>
+                            {% if config.logout_url is defined %}
+                            <li class="divider"></li>
+                            <li><a href="{{ config.logout_url }}"
+                                    translate>
+                                Logout</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% raw %}
+<div inform class="inform-fixed inform-shadow"></div>
+
+<div class="alert alert-warning" ng-show="logoutWarning" translate>
+    You will be logged out in {{ myCountdown }} second(s).
+</div>
+<div class="alert alert-warning {{ class_subscription_expired }}"
+    ng-show="subscription_state === 2">
+    <div translate>
+        Your subscription is not valid anymore. Either you exceeded the number of tokens or the
+        subscription expired. Please check, if you need to renew your <a ui-sref="component.subscriptions">subscription</a>.
+    </div>
+</div>
+{% endraw %}

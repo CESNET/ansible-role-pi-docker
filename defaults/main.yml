@@ -1,0 +1,34 @@
+---
+# defaults file for cesnet.pi_docker
+privacyidea_path: "/opt/privacyidea"
+
+privacyidea_dirs:
+  - { path: "{{ privacyidea_path }}" }
+
+privacyidea_files: []
+
+privacyidea_templates: []
+
+privacyidea_docker_compose_template: "default-docker-compose.yml"
+
+privacyidea_docker_image: "registry.gitlab.ics.muni.cz:443/perun-proxy-aai/containers/docker-privacyidea:latest"
+privacyidea_oauthproxy_docker_image: "bitnami/oauth2-proxy:latest"
+
+privacyidea_docker_network: "docker_network"
+
+privacy_idea_config:
+  environments: []
+  ports: []
+  volumes: []
+  log_tag: "privacy_idea"
+  extra_hosts: []
+
+privacyidea_oauthproxy_instances:
+  oauthproxy_name:
+    environments: [] # https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/
+    ports: []
+    volumes: []
+    log_tag: "oauthproxy_name"
+    extra_hosts: []
+
+privacyidea_cronjobs: []
