@@ -9,6 +9,8 @@ privacyidea_files: []
 
 privacyidea_templates: []
 
+privacy_idea: []
+
 privacyidea_docker_compose_template: "default-docker-compose.yml"
 
 privacyidea_docker_image: "registry.gitlab.ics.muni.cz:443/perun-proxy-aai/containers/docker-privacyidea:latest"

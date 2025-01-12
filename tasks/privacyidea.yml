@@ -28,16 +28,6 @@
   loop: "{{ privacyidea_templates }}"
   notify: "docker privacyidea restart"
 
-- name: "PRIVACYIDEA - Get attestation certs"
-  community.docker.docker_container:
-    name: "python-attestations"
-    image: "{{ python_docker_image }}"
-    command: "python /fido_mds.py"
-    debug: yes
-    volumes:
-      - "/{{ privacyidea_path }}/fido_mds.py:/fido_mds.py"
-      - "/{{ privacyidea_path }}/webauthn_attestation_certs:/webauthn_attestation_certs"
-
 - name: "PRIVACYIDEA - Create docker-compose.yml from template"
   template:
     src: "{{ privacyidea_docker_compose_template }}.j2"
@@ -45,6 +35,9 @@
     owner: root
     group: root
     mode: 0644
+  tags:
+    - upgrade_docker_containers
+    - privacyidea_upgrade_docker_container
   notify: "docker privacyidea restart"
 
 - name: "PRIVACYIDEA - Prepare log file if needed"
@@ -59,9 +52,13 @@
   notify: "docker privacyidea restart"
 
 - name: "PRIVACYIDEA - Start docker image"
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ privacyidea_path }}"
     state: present
+    pull: always
+  tags:
+    - upgrade_docker_containers
+    - privacyidea_upgrade_docker_container
 
 - name: "PRIVACYIDEA - site-specific tasks"
   when: privacyidea_site_specific_tasks is defined

@@ -8,7 +8,7 @@ attributes_manager_config:
       auth_type: BasicAuth
       username: "{{ config.perun_rpc.user }}"
       password: "{{ config.perun_rpc.password }}"
-      rp_id_attribute: urn:perun:facility:attribute-def:def:OIDCClientID # TODO: urn:perun:facility:attribute-def:def:rpIdentifier
+      rp_id_attribute: urn:perun:facility:attribute-def:def:entityID
 attributes_map:
   {{ config.settings_attribute.name }}:
     id: {{ config.settings_attribute.id }}
